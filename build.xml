@@ -1,0 +1,139 @@
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<!-- Builds, cleans and runs! Tweak for fun and profit/bugs. -->
+<project name="tesnik" default="build" basedir=".">
+   
+ <!-- Sdk location and other local environment vars -->
+ <!-- NB: to make things work edit/create this file, 
+ 	  depending on the environment, etc. -->
+ <property file="local.properties"/>
+   
+ <!-- Flex-related ANT tasks -->
+ <property name="flex.config" location="${FLEX_HOME}\frameworks\flex-config.xml"/>
+ <property name="flex.frameworks" location="${FLEX_HOME}\frameworks"/>
+   
+ <taskdef file="${FLEX_HOME}/ant/flexTasks.tasks" 
+ 	 	  classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+   
+ <!-- Source files location -->
+ <property name="src" location="src"/>
+   
+ <!-- Main file name -->
+ <property name="main.file" value="tesnik.mxml"/>
+   
+ <!-- Main file path -->
+ <property name="full.src.path" location="${src}/${main.file}"/>
+   
+ <!-- Resulting file -->
+ <property name="output.swf" location="tesnik.swf"/>
+
+ <!-- Root directory -->
+ <property name="root" location="." />
+
+ <property name="APP_ROOT" location="src" />
+
+ <property name="modulo" value="tesnik" />
+   
+ <!-- Build task (also default) and it's params [optimization ~1/2 resulting size] -->
+ <target name="build">
+	 <!--<mxmlc file="${full.src.path}" -->
+		 <!--output="${output.swf}" -->
+		 <!--keep-generated-actionscript="true" -->
+		 <!--optimize="true">-->
+		<!-- Necessary to build standalone actionscript modules (without flex and such) -->
+		<!--<static-link-runtime-shared-libraries>true</static-link-runtime-shared-libraries>-->
+		<!--<locale>en_US</locale>-->
+		<!--locale>ru_RU</locale-->
+		<!--<allow-source-path-overlap>true</allow-source-path-overlap>-->
+		<!--<source-path>src/locale/{locale}</source-path>-->
+		<!--<compiler.include-libraries dir="lib" append="true">-->
+			<!--<include name="as3-sdk.swc" /> -->
+		<!--</compiler.include-libraries>-->
+		<!--<keep-as3-metadata>ResourceBundle</keep-as3-metadata>-->
+	<!--</mxmlc-->
+	<mxmlc  file="${APP_ROOT}/${modulo}.mxml" keep-generated-actionscript="false" 
+                        output="${APP_ROOT}/${modulo}.swf"
+                        actionscript-file-encoding="UTF-8"                                          
+                        incremental="false" warnings="false" fork="true" maxmemory="512m" >
+
+			<!-- Get default compiler options. -->                  
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
+
+			<!-- List of path elements that form the roots of ActionScript
+			class hierarchies. -->
+			<source-path path-element="${FLEX_HOME}/frameworks"/>
+
+			<!-- List of SWC files or directories that contain SWC files. -->
+			<compiler.library-path dir="${APP_ROOT}" append="true">
+				<include name="libs" />
+				</compiler.library-path>       
+
+			<locale>en_US</locale>
+
+			<!-- Necesario para el source path del Flex Build Paht-->
+			<compiler.source-path path-element='${APP_ROOT}'/>
+			<compiler.source-path path-element='${APP_ROOT}/locale/en_US'/>
+
+			<compiler.include-libraries dir="lib" append="true">
+				<include name="as3-sdk.swc" />
+			</compiler.include-libraries>
+
+			<use-network>true</use-network>
+			<debug>false</debug>
+			<optimize>true</optimize>
+
+	</mxmlc>        
+ </target>
+
+<target name="packageModule">
+	<echo message="Empaquetando ${modulo} como aplicación AIR...." />
+	<exec dir="${root}" executable="${FLEX_HOME}/bin/adt" spawn="false">
+
+		<!--Empaqueta--> 
+		<arg value="-package"/>
+
+		<!--Formato del certificado -->
+		<arg value="-storetype"/>         
+		<arg value="pkcs12"/>
+
+		<!--ruta donde está el certificado -->    
+		<arg value="-keystore"/>          
+		<arg value="./certificado/antuan.p12"/>
+
+		<!--Password del certificado -->
+		<arg value="-storepass"/> 
+		<arg value="antuan"/>
+
+		<!--Nombre del archivo AIR a generar -->
+		<arg value="${modulo}.air"/>  
+		<!--nombre del archivo xml de configuración -->
+		<arg value="${modulo}-app.xml"/>           
+		<!--Nombre del swf compilado -->
+		<arg value="${modulo}.swf"/>
+
+	</exec>
+</target>
+
+<!-- Clean generated actionscript and resulting swf -->
+<target name="clean">
+	<delete dir="${root}/generated"/>
+	<delete>
+		<!-- Hmm, somehow, it does not delete it, in case the property is used. -->
+		<fileset dir="${root}" includes="tesnik.swf"/>
+	</delete>
+</target>
+
+<!-- Task to build and run project -->
+ <target name="run" depends="build">
+	 <exec executable="firefox">
+		 <arg value="${output.swf}"/>
+	 </exec>
+ </target>
+
+<!-- Task to swiftly launch compiled swf -->
+ <target name="go">
+	 <exec executable="firefox">
+		 <arg value="${output.swf}"/>
+	 </exec>
+ </target>
+</project>
+

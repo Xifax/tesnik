@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:media="flash.media.*"
+	creationComplete="init()">
+
+	<fx:Metadata> 
+		[ResourceBundle("resources")] 
+	</fx:Metadata> 
+
+	<fx:Script>
+	<![CDATA[
+		/*import util.Res;*/
+		import mx.controls.Alert;
+		import mx.utils.ObjectUtil;
+
+		import com.wordnik.api.client.WordnikClient;
+		import com.wordnik.api.entity.ApiUserCredentials;
+		import com.wordnik.api.event.ApiClientEvent;
+
+		public function init():void {}
+		public function test():void {
+			var apiToken:String = "";
+			/*var hostName:String = "api.wordnik.com";*/
+			var hostName:String = "http://api.wordnik.com/api";
+
+			var wordnikCredentials:ApiUserCredentials = new ApiUserCredentials(apiToken);
+			wordnikCredentials.hostName = hostName;
+			const wordnikClient:WordnikClient = new WordnikClient(wordnikCredentials);
+
+			// Add listeners to wait for a response from a call
+			wordnikClient.addEventListener(ApiClientEvent.WORD_LOOK_UP_COMPLETE_EVENT, onWordRequestCompleted);
+			/*wordnikClient.addEventListener(ApiClientEvent.SUGGESTIONS_RESPONSE_EVENT, onWordSuggestion);*/
+
+			// Make the call
+			wordnikClient.lookupWord("Dracula");
+			/*wordnikClient.getSpellingSuggestions("Zeebra");*/
+		}
+		
+		public function onWordRequestCompleted(event:ApiClientEvent):void {
+			Alert.show(ObjectUtil.toString(event.response));
+		}
+	]]>
+	</fx:Script>
+
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	<!--s:Panel title="{Res.get('ui.title')}"-->
+	<s:Panel title="Tesnik"
+            width="400" height="400"
+            horizontalCenter="0" verticalCenter="0">
+		<mx:Button label="Test" click="test();"/>
+	</s:Panel>
+
+</s:Application>
+
